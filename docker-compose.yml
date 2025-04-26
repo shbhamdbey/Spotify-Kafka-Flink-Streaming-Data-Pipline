@@ -1,0 +1,54 @@
+version: '3.8'  # Specifies the version of the Docker Compose file format.  3.8 is a relatively recent and recommended version.
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest  # Uses the latest version of the Confluent Platform's Zookeeper image. Zookeeper is a centralized service for maintaining configuration information, naming, providing distributed synchronization, and group services.
+    container_name: zookeeper # Assigns the name "zookeeper" to this container.  This is helpful for referencing it in other services or via the Docker CLI.
+    ports:
+      - "2181:2181"  # Maps port 2181 on the host machine to port 2181 in the container.  Zookeeper uses this port for client connections.
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181  # Configures the port on which Zookeeper will listen for client connections within the container.
+      ZOOKEEPER_TICK_TIME: 2000  # Sets the tick time in milliseconds.  This is the basic unit of time used by Zookeeper.
+
+  kafka:
+    image: confluentinc/cp-kafka:latest  # Uses the latest version of the Confluent Platform's Kafka image.  Kafka is a distributed streaming platform.
+    container_name: kafka # Assigns the name "kafka" to this container.
+    depends_on:
+      - zookeeper  # Specifies that the Kafka service depends on the Zookeeper service.  Zookeeper must be running before Kafka can start, because Kafka relies on Zookeeper.
+    ports:
+      - "9092:9092"  # Maps port 9092 on the host to port 9092 in the container.  This is the default port Kafka uses for broker-to-client communication.
+    environment:
+      KAFKA_BROKER_ID: 1  #  Sets the unique ID for this Kafka broker in the Kafka cluster.
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181  # Configures Kafka to connect to Zookeeper at the address `zookeeper:2181`.  The `zookeeper` hostname is resolved by Docker Compose to the Zookeeper container.
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092  # Specifies the address and port that clients should use to connect to this Kafka broker. `PLAINTEXT` indicates no security.
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1  # Sets the replication factor for the internal Kafka topic used to store consumed offsets.  A value of 1 means no replication.
+
+  flink-jobmanager:
+    build:  # Specifies how to build the Docker image for this service.
+      context: .  # The current directory is used as the build context.
+      dockerfile: Dockerfile  #  The Dockerfile in the current directory is used to build the image.
+    image: your-custom-pyflink:latest  # Uses a custom-built Docker image named "your-custom-pyflink:latest".  This image should contain Flink and any necessary dependencies (like PyFlink).
+    container_name: flink-jobmanager  # Assigns the name "flink-jobmanager" to this container.  This is the master node in a Flink cluster.
+    depends_on:
+      - kafka  # Specifies that the Flink JobManager depends on the Kafka service.
+      - zookeeper # Specifies that the Flink JobManager depends on the Zookeeper service.
+    ports:
+      - "8081:8081"  # Maps port 8081 on the host to port 8081 in the container.  This is the port used by the Flink web UI.
+    environment:
+      FLINK_PROPERTIES: |  #  Sets Flink configuration properties.  The `|` allows for multi-line strings.
+        jobmanager.rpc.address: flink-jobmanager  # Sets the RPC address of the JobManager.  This allows TaskManagers to connect to it.
+    command: jobmanager  # Specifies the command to run when the container starts.  In this case, it starts the Flink JobManager process.
+
+  flink-taskmanager:
+    build: # Specifies how to build the Docker image for this service.
+      context: .  # The current directory is used as the build context.
+      dockerfile: Dockerfile  # The Dockerfile in the current directory is used to build the image.
+    image: your-custom-pyflink:latest  # Uses the same custom-built Docker image as the JobManager. TaskManagers use the same image to ensure a consistent environment.
+    container_name: flink-taskmanager  # Assigns the name "flink-taskmanager" to this container.  This is a worker node in the Flink cluster.
+    depends_on:
+      - flink-jobmanager  # Specifies that the Flink TaskManager depends on the Flink JobManager.  The JobManager must be running before TaskManagers can connect to it.
+    environment:
+      FLINK_PROPERTIES: |  # Sets Flink configuration properties.
+        jobmanager.rpc.address: flink-jobmanager  #  Configures the TaskManager to connect to the JobManager at the address `flink-jobmanager`.
+        taskmanager.numberOfTaskSlots: 2  #  Sets the number of task slots for this TaskManager.  Each slot can execute a part of a Flink task.
+    command: taskmanager  # Specifies the command to run when the container starts.  This starts the Flink TaskManager process.
