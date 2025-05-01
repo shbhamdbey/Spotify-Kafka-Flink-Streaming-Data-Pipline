@@ -1,0 +1,73 @@
+#Start the docker container
+docker-compose up -d --build
+
+#You will see Apache Flink dashboard on:
+http://localhost:8081/#/overview
+
+#Restart the Custome Service Optional
+docker-compose up -d --build flink-jobmanager flink-taskmanager
+
+#Tear Off Docker Image
+docker-compose down
+
+
+# CANCEL A FLINK job
+docker-compose exec jobmanager flink cancel fa0278572e076cccd682ac16328b91b7
+
+#LIST FLINK job
+docker-compose exec jobmanager flink list
+
+
+# Create Kafka Test Topic
+docker exec kafka \
+  kafka-topics --create \
+    --topic test-topic \
+    --bootstrap-server localhost:9092 \
+    --partitions 1 \
+    --replication-factor 1
+
+
+docker exec kafka \
+  kafka-topics --list --bootstrap-server localhost:9092
+# → should include "test-topic"
+
+
+#Create Kafka-test.sql file still in progress
+docker exec -it flink-jobmanager \
+  /bin/bash -c "/opt/flink/bin/sql-client.sh embedded -f /tmp/kafka-test.sql"
+
+
+#Produce messages:
+docker-compose exec -it kafka \
+  kafka-console-producer \
+    --broker-list kafka:9092 \
+    --topic test-topic
+
+
+
+#Input Topic and Output topic Connection:
+CREATE TABLE test_source (
+  `value` STRING
+) WITH (
+  'connector' = 'kafka',
+  'topic' = 'test-topic',
+  'properties.bootstrap.servers' = 'kafka:9092',
+  'scan.startup.mode' = 'earliest-offset',
+  'format' = 'csv'
+);
+
+CREATE TABLE kafka_sink (
+  `value` STRING
+) WITH (
+  'connector' = 'kafka',
+  'topic' = 'output-topic',
+  'properties.bootstrap.servers' = 'kafka:9092',
+  'format' = 'csv'
+);
+
+
+#create connetor:
+INSERT INTO kafka_sink
+SELECT CONCAT('Hi ', `value`) AS `value`
+FROM test_source;
+
