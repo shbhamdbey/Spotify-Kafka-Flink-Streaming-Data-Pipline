@@ -4,6 +4,8 @@
 
 This project implements a real-time music recommendation pipeline, leveraging a suite of cutting-edge technologies to provide personalized music suggestions. The system is designed to enhance user engagement, drive music discovery, and increase user satisfaction by tailoring recommendations to individual preferences. [cite: 608, 609, 610]
 
+![Project Flow](ProjectFlow.png)
+
 ## Technologies Used
 
 The pipeline integrates the following technologies:
@@ -63,37 +65,37 @@ The pipeline integrates the following technologies:
 
 The system architecture is defined in the `docker-compose.yml` file and comprises the following services:
 
-* **Zookeeper:** For Kafka cluster management. [cite: 636, 637, 638, 639, 640, 641, 642, 643, 644, 645, 646, 647, 648, 649, 650, 651, 652, 653, 654, 655]
+* **Zookeeper:** For Kafka cluster management. [cite: 636-655]
    
-* **Kafka:** The message broker for handling track play events. [cite: 636, 637, 638, 639, 640, 641, 642, 643, 644, 645, 646, 647, 648, 649, 650, 651, 652, 653, 654, 655, 656, 657, 658, 659, 660, 661, 662, 663, 664]
+* **Kafka:** The message broker for handling track play events. [cite: 636-664]
 
-* **Flink JobManager:** Coordinates the Flink jobs. [cite: 673, 674, 675, 676, 677, 678, 679]
+* **Flink JobManager:** Coordinates the Flink jobs. [cite: 673-679]
    
-* **Flink TaskManager:** Executes the Flink tasks. [cite: 673, 674, 675, 676, 677, 678, 679]
+* **Flink TaskManager:** Executes the Flink tasks. [cite: 673-679]
 
 ## Pipeline Stages
 
 1.  **Data Ingestion and Preprocessing:**
-    * Ingest track play events from the Spotify API. [cite: 681, 682, 683, 684, 685, 686, 687]
-    * Stream data with Flink and Kafka. [cite: 692, 693, 694, 695, 696, 697, 698, 699, 700, 701]
-    * Enrich data with audio features from the Spotify API. [cite: 702, 703, 704, 705, 706, 707, 708, 709, 710]
-    * Normalize audio features in Flink. [cite: 711, 712, 713, 714, 715, 716, 717]
+    * Ingest track play events from the Spotify API. [cite: 681-687]
+    * Stream data with Flink and Kafka. [cite: 692-701]
+    * Enrich data with audio features from the Spotify API. [cite: 702-710]
+    * Normalize audio features in Flink. [cite: 711-717]
 
 2.  **Vector Database Integration:**
-    * Generate song embeddings using Sentence Transformers. [cite: 720, 721, 722, 723, 724, 725, 726, 727, 728, 729]
-    * Index songs in Pinecone for semantic search. [cite: 730, 731, 732, 733, 734, 735, 736, 737, 738, 739, 740, 741]
+    * Generate song embeddings using Sentence Transformers. [cite: 720-729]
+    * Index songs in Pinecone for semantic search. [cite: 730-741]
 
 3.  **Machine Learning Recommendation Pipeline:**
-    * Implement user-song recommendations with PySpark MLlib (Collaborative Filtering). [cite: 743, 744, 745, 746, 747, 748, 749, 750, 751, 752, 753, 754, 755, 756, 757]
-    * Perform hourly clustering of audio features with Flink. [cite: 758, 759, 760, 761, 762, 763, 764, 765]
-    * Create hybrid recommendations by combining PySpark and Pinecone results. [cite: 766, 767, 768, 769, 770, 771, 772, 773, 774]
-    * (Conceptual Overview) MLOps and automation with TFX. [cite: 775, 776, 777, 778, 779, 780, 781]
+    * Implement user-song recommendations with PySpark MLlib (Collaborative Filtering). [cite: 743-757]
+    * Perform hourly clustering of audio features with Flink. [cite: 758-765]
+    * Create hybrid recommendations by combining PySpark and Pinecone results. [cite: 766-774]
+    * (Conceptual Overview) MLOps and automation with TFX. [cite: 775-781]
 
 4.  **Real-Time Stream Processing and Analytics:**
-    * Integrate Kafka with Flink SQL. [cite: 786, 787, 788, 789, 790, 791, 792, 793, 794, 795]
-    * Identify popular trends with real-time dashboards. [cite: 796, 797, 798, 799, 800, 801, 802, 803, 804, 805]
-    * Analyze user engagement with artist analytics. [cite: 806, 807, 808, 809, 810, 811, 812, 813, 814, 815]
-    * Detect anomalies using Z-score analysis. [cite: 816, 817, 818, 819, 820, 821, 822, 823]
+    * Integrate Kafka with Flink SQL. [cite: 786-795]
+    * Identify popular trends with real-time dashboards. [cite: 796-805]
+    * Analyze user engagement with artist analytics. [cite: 806-815]
+    * Detect anomalies using Z-score analysis. [cite: 816-823]
 
 ## Contributing
 
