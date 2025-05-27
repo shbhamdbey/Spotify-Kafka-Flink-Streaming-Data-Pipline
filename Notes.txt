@@ -1,3 +1,5 @@
+Motivation: https://engineering.atspotify.com/2024/10/how-we-generated-millions-of-content-annotations/
+
 #Start the docker container
 docker-compose up -d --build
 
